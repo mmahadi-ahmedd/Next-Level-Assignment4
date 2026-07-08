@@ -1,0 +1,20 @@
+model Booking {
+  id           Int           @id @default(autoincrement())
+  customerId   Int
+  technicianId Int
+  serviceId    Int
+  status       BookingStatus @default(REQUESTED)
+  scheduledAt  DateTime
+  address      String
+  notes        String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  customer   User              @relation("CustomerBookings", fields: [customerId], references: [id], onDelete: Cascade)
+  technician TechnicianProfile @relation("TechnicianBookings", fields: [technicianId], references: [id], onDelete: Cascade)
+  service    Service           @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  payment    Payment?
+  review     Review?
+
+  @@map("bookings")
+}

@@ -1,0 +1,12 @@
+model Availability {
+  id           Int      @id @default(autoincrement())
+  technicianId Int
+  dayOfWeek    Int      @db.SmallInt // 0 = Sunday ... 6 = Saturday
+  startTime    String   // "09:00"
+  endTime      String   // "17:00"
+  createdAt    DateTime @default(now())
+
+  technician TechnicianProfile @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+
+  @@map("availability")
+}
