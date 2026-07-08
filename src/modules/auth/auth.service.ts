@@ -1,7 +1,9 @@
 import bcrypt from 'bcryptjs';
 import { prisma } from '../../lib/prisma';
 import ApiError from '../../utils/ApiError';
-import { signToken } from '../../utils/jwt';
+import config from '../../config';
+import { jwtUtils } from '../../utils/jwt';
+import { SignOptions } from 'jsonwebtoken';
 
 
 
@@ -24,7 +26,7 @@ const register = async (payload: RegisterInput) => {
     throw new ApiError(409, 'A user with this email already exists.');
   }
 
-  const hashedPassword = await bcrypt.hash(payload.password, 10);
+  const hashedPassword = await bcrypt.hash(payload.password, Number(config.bcrypt_salt_rounds));
 
   const user = await prisma.user.create({
     data: {
@@ -46,15 +48,64 @@ const register = async (payload: RegisterInput) => {
     });
   }
 
-  const token = signToken({ userId: user.id, role: user.role, email: user.email });
+//   const token = signToken({ userId: user.id, role: user.role, email: user.email });
 
   const { password, ...userWithoutPassword } = user;
 
-  return { user: userWithoutPassword, token };
+  return { user: userWithoutPassword};
+// return user
+};
+
+const login = async (payload: LoginInput) => {
+  const user = await prisma.user.findUnique({ where: { email: payload.email } });
+  if (!user) {
+    throw new ApiError(401, 'Invalid email');
+  }
+
+  if (user.status === 'BANNED') {
+    throw new ApiError(403, 'Your account has been banned. Contact support.');
+  }
+
+  const isPasswordValid = await bcrypt.compare(payload.password, user.password);
+  if (!isPasswordValid) {
+    throw new ApiError(401, 'Invalid password.');
+  }
+
+  // const token = signToken({ userId: user.id, role: user.role, email: user.email });
+
+   const jwtPayload = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+    }
+
+    const accessToken = jwtUtils.createToken(
+        jwtPayload,
+        config.jwt_access_secret,
+        config.jwt_access_expires_in as SignOptions
+    );
+
+    const refreshToken = jwtUtils.createToken(
+        jwtPayload,
+        config.jwt_refresh_secret,
+        config.jwt_refresh_expires_in as SignOptions
+    );
+
+    return {
+        accessToken,
+        refreshToken
+    };
+
+  // const { password, ...userWithoutPassword } = user;
+
+  // return { user: userWithoutPassword, token };
+  // return user
 };
 
 
 
 export const AuthService = {
   register,
+  login,
 };

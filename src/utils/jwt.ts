@@ -1,18 +1,35 @@
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
 
-export interface JwtPayload {
-  userId: number;
-  role: string;
-  email: string;
+const createToken = (payload : JwtPayload, secret : string, expiresIn : SignOptions ) => {
+    const token = jwt.sign(
+        payload, 
+        secret, 
+        {
+            expiresIn
+        } as SignOptions
+    );
+
+    return token;
 }
 
-const JWT_SECRET = process.env.JWT_SECRET as string;
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+const verifyToken = (token : string, secret : string) => {
+   try {
+        const verifiedToken = jwt.verify(token, secret);
+        return {
+            success: true,
+            data: verifiedToken
+        };
+   } catch (error : any) {
+        console.log("Token verification failed:", error);
+        return {
+            success: false,
+            error : error.message
+        }
+   }
+}
 
-export const signToken = (payload: JwtPayload): string => {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions);
-};
 
-export const verifyToken = (token: string): JwtPayload => {
-  return jwt.verify(token, JWT_SECRET) as JwtPayload;
-};
+export const jwtUtils = {
+    createToken,
+    verifyToken
+}

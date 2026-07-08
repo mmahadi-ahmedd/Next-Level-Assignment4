@@ -2,6 +2,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express ,{ Application, Request, Response } from "express";
 import config from "./config";
+import { AuthRoutes } from "./modules/auth/auth.routes";
 
 const app: Application = express();
 
@@ -21,6 +22,6 @@ app.get("/",(req:Request,res:Response)=>{
   });
 })
 
-
+app.use("/api/auth", AuthRoutes)
 
 export default app;
