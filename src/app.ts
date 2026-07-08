@@ -15,7 +15,12 @@ app.use(express.urlencoded({ extended : true }));
 app.use(cookieParser())
 
 app.get("/",(req:Request,res:Response)=>{
-    res.send("Hello world")
+    res.status(200).json({
+    success: true,
+    message: 'FixItNow API is running 🔧',
+  });
 })
+
+
 
 export default app;
