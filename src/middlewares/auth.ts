@@ -40,6 +40,9 @@ const auth = () => {
       if (user.status === 'BANNED') {
         throw new ApiError(403, 'Your account has been banned. Contact support.');
       }
+      if (user.role !== 'TECHNICIAN') {
+        throw new ApiError(403, 'You are not a technician');
+      }
 
       req.user = decoded;
       next();
