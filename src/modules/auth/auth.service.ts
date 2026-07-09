@@ -120,4 +120,5 @@ const getMe = async (userId: number) => {
 export const AuthService = {
   register,
   login,
+  getMe
 };
