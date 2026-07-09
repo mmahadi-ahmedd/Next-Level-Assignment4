@@ -1,5 +1,6 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import routes from './routes';
 import express ,{ Application, Request, Response } from "express";
 import config from "./config";
 import { AuthRoutes } from "./modules/auth/auth.routes";
@@ -22,6 +23,6 @@ app.get("/",(req:Request,res:Response)=>{
   });
 })
 
-app.use("/api/auth", AuthRoutes)
+app.use('/api', routes);
 
 export default app;

@@ -3,7 +3,7 @@ import { prisma } from '../../lib/prisma';
 import ApiError from '../../utils/ApiError';
 import config from '../../config';
 import { jwtUtils } from '../../utils/jwt';
-import { SignOptions } from 'jsonwebtoken';
+import { JwtPayload, SignOptions } from 'jsonwebtoken';
 
 
 
@@ -118,9 +118,45 @@ const getMe = async (userId : number) => {
     return user;
 }
 
+const refreshToken = async (refreshToken : string) => {
+    const verifiedRefreshToken = jwtUtils.verifyToken(refreshToken, config.jwt_refresh_secret);
+
+    if(!verifiedRefreshToken.success){
+        throw new Error(verifiedRefreshToken.error)
+    }
+
+    const {id} = verifiedRefreshToken.data as JwtPayload;
+
+    const user = await prisma.user.findUniqueOrThrow({
+        where : {
+            id
+        }
+    })
+
+    if(user.status === "BANNED"){
+        throw new Error("User is banned!")
+    }
+
+    const jwtPayload = {
+        id,
+        name : user.name,
+        email : user.email,
+        role : user.role
+    }
+
+
+    const accessToken = jwtUtils.createToken(
+        jwtPayload,
+        config.jwt_access_secret,
+        config.jwt_access_expires_in as SignOptions
+    );
+
+    return {accessToken}
+}
 
 export const AuthService = {
   register,
   login,
-  getMe
+  getMe,
+  refreshToken
 };
