@@ -25,7 +25,7 @@ const getTechnicianById = catchAsync(async (req: Request, res: Response) => {
 });
 
 const updateProfile = catchAsync(async (req: Request, res: Response) => {
-  const result = await TechnicianService.updateProfile(req.user!.userId, req.body);
+  const result = await TechnicianService.updateProfile(req.user!.id, req.body);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -35,7 +35,7 @@ const updateProfile = catchAsync(async (req: Request, res: Response) => {
 });
 
 const updateAvailability = catchAsync(async (req: Request, res: Response) => {
-  const result = await TechnicianService.updateAvailability(req.user!.userId, req.body.slots);
+  const result = await TechnicianService.updateAvailability(req.user!.id, req.body.slots);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -45,7 +45,7 @@ const updateAvailability = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getTechnicianBookings = catchAsync(async (req: Request, res: Response) => {
-  const result = await TechnicianService.getTechnicianBookings(req.user!.userId);
+  const result = await TechnicianService.getTechnicianBookings(req.user!.id);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
