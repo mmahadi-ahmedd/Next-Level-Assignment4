@@ -5,6 +5,7 @@ import * as dotenv from 'dotenv';
 import { Role } from '../generated/prisma/enums';
 import { PrismaClient } from '../generated/prisma/client';
 import { prisma } from '../src/lib/prisma';
+import config from '../src/config';
 
 dotenv.config();
 
