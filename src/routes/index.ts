@@ -5,8 +5,8 @@ import { TechnicianRoutes } from '../modules/technician/technician.routes';
 import { ServiceRoutes } from '../modules/service/service.routes';
 import { BookingRoutes } from '../modules/booking/booking.routes';
 import { PaymentRoutes } from '../modules/payment/payment.routes';
-// import { ReviewRoutes } from '../modules/review/review.routes';
-// import { AdminRoutes } from '../modules/admin/admin.routes';
+import { ReviewRoutes } from '../modules/review/review.routes';
+import { AdminRoutes } from '../modules/admin/admin.routes';
 
 const router = express.Router();
 
@@ -17,8 +17,8 @@ const moduleRoutes = [
   { path: '/services', route: ServiceRoutes },
   { path: '/bookings', route: BookingRoutes },
   { path: '/payments', route: PaymentRoutes },
-//   { path: '/reviews', route: ReviewRoutes },
-//   { path: '/admin', route: AdminRoutes },
+  { path: '/reviews', route: ReviewRoutes },
+  { path: '/admin', route: AdminRoutes },
 ];
 
 moduleRoutes.forEach(({ path, route }) => router.use(path, route));

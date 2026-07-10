@@ -38,7 +38,7 @@ const createPaymentSession = async (customerId: number, bookingId: number) => {
     amount: amountInCents,
     currency: 'usd',
     metadata: { bookingId: String(booking.id), customerId: String(customerId) },
-    automatic_payment_methods: { enabled: true },
+    automatic_payment_methods: { enabled: true  },
   });
 
   await prisma.payment.upsert({
