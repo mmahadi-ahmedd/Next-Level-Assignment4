@@ -56,7 +56,7 @@ const getTechnicianBookings = catchAsync(async (req: Request, res: Response) => 
 
 const updateBookingStatus = catchAsync(async (req: Request, res: Response) => {
   const result = await TechnicianService.updateBookingStatus(
-    req.user!.userId,
+    req.user!.id,
     Number(req.params.id),
     req.body.status
   );

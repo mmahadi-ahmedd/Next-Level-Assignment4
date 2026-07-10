@@ -26,7 +26,7 @@ const getUserBookings = catchAsync(async (req: Request, res: Response) => {
 
 const getBookingById = catchAsync(async (req: Request, res: Response) => {
   const result = await BookingService.getBookingById(
-    req.user!.userId,
+    req.user!.id,
     req.user!.role,
     Number(req.params.id)
   );

@@ -4,6 +4,7 @@ import routes from './routes';
 import express ,{ Application, Request, Response } from "express";
 import config from "./config";
 import globalErrorHandler from "./middlewares/errorhandler";
+import notFound from "./middlewares/notFound";
 
 const app: Application = express();
 
@@ -25,6 +26,7 @@ app.get("/",(req:Request,res:Response)=>{
 
 app.use('/api', routes);
 
+app.use(notFound);
 app.use(globalErrorHandler);
 
 export default app;
