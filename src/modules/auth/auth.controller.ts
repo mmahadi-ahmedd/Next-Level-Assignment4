@@ -22,7 +22,7 @@ const login = catchAsync(async (req: Request, res: Response) => {
 
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: false,
+    secure: true,
     sameSite: "none",
     maxAge: 1000 * 60 * 60 * 24 // 24 hour or 1 day
   })
@@ -43,7 +43,7 @@ const login = catchAsync(async (req: Request, res: Response) => {
 });
 
 
-const getMe = catchAsync(async (req: Request, res: Response,next: NextFunction) => {
+const getMe = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
   const { accessToken } = req.cookies;
   // console.log(req.user, "user request");
@@ -53,7 +53,7 @@ const getMe = catchAsync(async (req: Request, res: Response,next: NextFunction) 
   if (typeof verifiedToken === "string") {
     throw new Error(verifiedToken);
   }
-   const decoded = verifiedToken.data as JwtPayload;
+  const decoded = verifiedToken.data as JwtPayload;
 
   const profile = await AuthService.getMe(decoded.id);
 
@@ -67,26 +67,26 @@ const getMe = catchAsync(async (req: Request, res: Response,next: NextFunction) 
 
 })
 
-const refreshToken = catchAsync(async (req : Request, res : Response, next: NextFunction) => {
-    const refreshToken = req.cookies.refreshToken;
+const refreshToken = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const refreshToken = req.cookies.refreshToken;
 
-    const {accessToken} = await AuthService.refreshToken(refreshToken);
+  const { accessToken } = await AuthService.refreshToken(refreshToken);
 
-    res.cookie("accessToken", accessToken, {
-        httpOnly: true,
-        secure: false,
-        sameSite: "none",
-        maxAge: 1000 * 60 * 60 * 24 // 24 hour or 1 day
-    })
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge: 1000 * 60 * 60 * 24 // 24 hour or 1 day
+  })
 
-    sendResponse(res, {
-        success : true,
-        statusCode : httpStatus.OK,
-        message : "Token Refreshed Successfully",
-        data : {
-            accessToken
-        }
-    })
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Token Refreshed Successfully",
+    data: {
+      accessToken
+    }
+  })
 })
 
 export const AuthController = {

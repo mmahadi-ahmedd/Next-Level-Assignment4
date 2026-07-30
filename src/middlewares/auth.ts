@@ -40,6 +40,10 @@ const auth = () => {
       if (user.status === 'BANNED') {
         throw new ApiError(403, 'Your account has been banned. Contact support.');
       }
+      console.log("=== AUTH DEBUG ===");
+      console.log("cookies:", req.cookies);
+      console.log("authorization header:", req.headers.authorization);
+      console.log("token extracted:", token); 
 
       req.user = decoded;
       next();

@@ -10,7 +10,7 @@ import { PaymentController } from "./modules/payment/payment.controller";
 const app: Application = express();
 
 app.use(cors({
-    origin : config.app_url,
+    origin : "http://localhost:3000",
     credentials : true,
 }))
 
