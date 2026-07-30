@@ -1,9 +1,9 @@
 import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
 
-const createToken = (payload : JwtPayload, secret : string, expiresIn : SignOptions ) => {
+const createToken = (payload: JwtPayload, secret: string, expiresIn: SignOptions) => {
     const token = jwt.sign(
-        payload, 
-        secret, 
+        payload,
+        secret,
         {
             expiresIn
         } as SignOptions
@@ -12,20 +12,22 @@ const createToken = (payload : JwtPayload, secret : string, expiresIn : SignOpti
     return token;
 }
 
-const verifyToken = (token : string, secret : string) => {
-   try {
+const verifyToken = (token: string, secret: string) => {
+    console.log("secret value:", process.env.JWT_ACCESS_SECRET);
+    console.log("secret param:", secret ? "HAS VALUE" : "UNDEFINED/EMPTY");
+    try {
         const verifiedToken = jwt.verify(token, secret);
         return {
             success: true,
             data: verifiedToken
         };
-   } catch (error : any) {
+    } catch (error: any) {
         console.log("Token verification failed:", error);
         return {
             success: false,
-            error : error.message
+            error: error.message
         }
-   }
+    }
 }
 
 
