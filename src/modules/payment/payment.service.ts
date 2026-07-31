@@ -38,7 +38,7 @@ const createPaymentSession = async (customerId: number, bookingId: number) => {
     amount: amountInCents,
     currency: 'usd',
     metadata: { bookingId: String(booking.id), customerId: String(customerId) },
-    automatic_payment_methods: { enabled: true  },
+    automatic_payment_methods: { enabled: true },
   });
 
   await prisma.payment.upsert({
@@ -128,6 +128,44 @@ const manualConfirmPayment = async (customerId: number, bookingId: number) => {
   return markPaymentCompleted(intent.id);
 };
 
+const testConfirmPayment = async (customerId: number, bookingId: number) => {
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    include: { payment: true, service: true },
+  });
+
+  if (!booking) throw new ApiError(404, 'Booking not found.');
+  if (booking.customerId !== customerId) throw new ApiError(403, 'This booking does not belong to you.');
+  if (!booking.payment) throw new ApiError(400, 'No payment session found. Create one first.');
+  if (booking.payment.status === 'COMPLETED') throw new ApiError(400, 'Payment already completed.');
+
+  // Confirm with Stripe using test card — works in test mode only
+  const intent = await stripe.paymentIntents.confirm(
+    booking.payment.transactionId,
+    {
+      payment_method: 'pm_card_visa',
+      return_url: 'https://fixitnow-backend-eosin.vercel.app',
+    }
+  );
+
+  if (intent.status !== 'succeeded') {
+    throw new ApiError(400, `Payment failed. Stripe status: ${intent.status}`);
+  }
+
+  // Atomically update payment + booking
+  return prisma.$transaction(async (tx) => {
+    const updatedPayment = await tx.payment.update({
+      where: { id: booking.payment!.id },
+      data: { status: 'COMPLETED', paidAt: new Date() },
+    });
+    await tx.booking.update({
+      where: { id: bookingId },
+      data: { status: 'PAID' },
+    });
+    return updatedPayment;
+  });
+};
+
 const getUserPayments = async (userId: number, role: string) => {
   if (role === 'ADMIN') {
     return prisma.payment.findMany({
@@ -163,6 +201,7 @@ export const PaymentService = {
   markPaymentCompleted,
   markPaymentFailed,
   manualConfirmPayment,
+  testConfirmPayment,
   getUserPayments,
   getPaymentById,
 };

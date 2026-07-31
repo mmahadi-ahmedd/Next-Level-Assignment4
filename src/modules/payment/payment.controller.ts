@@ -57,6 +57,19 @@ const handleWebhook = catchAsync(async (req: Request, res: Response) => {
   res.status(200).json({ received: true });
 });
 
+const testConfirmPayment = catchAsync(async (req: Request, res: Response) => {
+  const result = await PaymentService.testConfirmPayment(
+    req.user!.id,
+    req.body.bookingId
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Payment confirmed successfully. Booking is now PAID.',
+    data: result,
+  });
+});
+
 const getUserPayments = catchAsync(async (req: Request, res: Response) => {
   const result = await PaymentService.getUserPayments(req.user!.userId, req.user!.role);
   sendResponse(res, {
@@ -85,6 +98,7 @@ export const PaymentController = {
   createPaymentSession,
   confirmPayment,
   handleWebhook,
+  testConfirmPayment,
   getUserPayments,
   getPaymentById,
 };

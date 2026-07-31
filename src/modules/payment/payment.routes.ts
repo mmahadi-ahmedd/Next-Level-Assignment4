@@ -21,6 +21,13 @@ router.post(
   validateRequest(PaymentValidation.createPaymentSchema),
   PaymentController.confirmPayment
 );
+router.post(
+  '/test-confirm',
+  auth(),
+  checkRole('CUSTOMER'),
+  validateRequest(PaymentValidation.createPaymentSchema),
+  PaymentController.testConfirmPayment
+);
 router.get('/', auth(), PaymentController.getUserPayments);
 router.get('/:id', auth(), PaymentController.getPaymentById);
 
