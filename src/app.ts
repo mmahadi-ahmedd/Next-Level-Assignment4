@@ -10,10 +10,12 @@ import { PaymentController } from "./modules/payment/payment.controller";
 const app: Application = express();
 
 app.use(cors({
-    origin : "http://localhost:3000",
-    credentials : true,
-}))
-
+  origin: [
+    "http://localhost:3000",
+    "https://fixitnow-frontend.vercel.app", // update this after frontend deploys
+  ],
+  credentials: true,
+}));
 app.post(
   '/api/payments/webhook',
   express.raw({ type: 'application/json' }),

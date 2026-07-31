@@ -19,26 +19,44 @@ const register = catchAsync(async (req: Request, res: Response) => {
 
 const login = catchAsync(async (req: Request, res: Response) => {
   const { accessToken, refreshToken } = await AuthService.login(req.body);
-
+  
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
     secure: true,
     sameSite: "none",
-    maxAge: 1000 * 60 * 60 * 24 // 24 hour or 1 day
-  })
-
+    maxAge: 1000 * 60 * 60 * 24, 
+  });
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: false,
+    secure: true,
     sameSite: "none",
-    maxAge: 1000 * 60 * 60 * 24 * 7 // 7 day
-  })
+    maxAge: 1000 * 60 * 60 * 24 * 7, 
+  });
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Login successful',
+    message: "Login successful",
     data: { accessToken, refreshToken },
+  });
+});
+
+const logout = catchAsync(async (req: Request, res: Response) => {
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  });
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  });
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Logged out successfully",
+    data: null,
   });
 });
 
@@ -103,6 +121,7 @@ const refreshToken = catchAsync(async (req: Request, res: Response, next: NextFu
 export const AuthController = {
   register,
   login,
+  logout,
   getMe,
   refreshToken
 };
