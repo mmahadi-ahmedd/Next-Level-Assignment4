@@ -40,4 +40,11 @@ router.patch(
   TechnicianController.updateBookingStatus
 );
 
+router.get(
+  '/technician/profile',
+  auth(),
+  checkRole('TECHNICIAN'),
+  TechnicianController.getMyProfile
+);
+
 export const TechnicianRoutes = router;

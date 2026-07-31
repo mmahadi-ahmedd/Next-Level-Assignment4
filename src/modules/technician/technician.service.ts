@@ -66,6 +66,21 @@ const getTechnicianById = async (id: number) => {
   return technician;
 };
 
+const getMyProfile = async (userId: number) => {
+  const profile = await prisma.technicianProfile.findUnique({
+    where: { userId },
+    include: {
+      user: { select: { id: true, name: true, email: true, phone: true } },
+      services: { include: { category: true } },
+      availability: true,
+    },
+  });
+  if (!profile) {
+    throw new ApiError(404, 'Technician profile not found.');
+  }
+  return profile;
+};
+
 const updateProfile = async (
   userId: number,
   payload: { bio?: string; experienceYears?: number; hourlyRate?: number; location?: string }
@@ -159,6 +174,7 @@ const updateBookingStatus = async (
 export const TechnicianService = {
   getAllTechnicians,
   getTechnicianById,
+   getMyProfile,
   updateProfile,
   updateAvailability,
   getTechnicianBookings,
