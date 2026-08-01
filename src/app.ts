@@ -12,7 +12,7 @@ const app: Application = express();
 app.use(cors({
   origin: [
     "http://localhost:3000",
-    "https://fixitnow-frontend.vercel.app", // update this after frontend deploys
+    "https://fixitnow-frontend-xi.vercel.app", // update this after frontend deploys
   ],
   credentials: true,
 }));
