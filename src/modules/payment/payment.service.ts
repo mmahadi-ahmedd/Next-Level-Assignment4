@@ -68,6 +68,88 @@ const createPaymentSession = async (customerId: number, bookingId: number) => {
   };
 };
 
+const createCheckoutSession = async (customerId: number, bookingId: number) => {
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    include: { service: true, payment: true },
+  });
+
+  if (!booking) throw new ApiError(404, 'Booking not found.');
+  if (booking.customerId !== customerId) throw new ApiError(403, 'This booking does not belong to you.');
+  if (booking.status !== 'ACCEPTED') {
+    throw new ApiError(400, `Booking must be ACCEPTED before payment. Current status: ${booking.status}`);
+  }
+
+  const amountInCents = Math.round(Number(booking.service.price) * 100);
+
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ['card'],
+    line_items: [
+      {
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: booking.service.title,
+            description: `Booking #${booking.id}`,
+          },
+          unit_amount: amountInCents,
+        },
+        quantity: 1,
+      },
+    ],
+    mode: 'payment',
+    success_url: `${process.env.FRONTEND_URL}/payment/success?bookingId=${booking.id}&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${process.env.FRONTEND_URL}/payment/cancel?bookingId=${booking.id}`,
+    metadata: {
+      bookingId: String(booking.id),
+      customerId: String(customerId),
+    },
+  });
+
+  // Save pending payment record
+  await prisma.payment.upsert({
+    where: { bookingId: booking.id },
+    update: {
+      transactionId: session.id,
+      amount: booking.service.price,
+      status: 'PENDING',
+      method: 'card',
+      provider: 'STRIPE',
+    },
+    create: {
+      bookingId: booking.id,
+      customerId,
+      transactionId: session.id,
+      amount: booking.service.price,
+      method: 'card',
+      provider: 'STRIPE',
+      status: 'PENDING',
+    },
+  });
+
+  return { url: session.url, sessionId: session.id };
+};
+
+const verifyCheckoutSession = async (sessionId: string, bookingId: number) => {
+  const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+  if (session.payment_status !== 'paid') {
+    throw new ApiError(400, 'Payment not completed.');
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const payment = await tx.payment.update({
+      where: { bookingId },
+      data: { status: 'COMPLETED', paidAt: new Date() },
+    });
+    await tx.booking.update({
+      where: { id: bookingId },
+      data: { status: 'PAID' },
+    });
+    return payment;
+  });
+};
+
 const markPaymentCompleted = async (paymentIntentId: string) => {
   const payment = await prisma.payment.findUnique({ where: { transactionId: paymentIntentId } });
   if (!payment) {
@@ -198,6 +280,8 @@ const getPaymentById = async (userId: number, role: string, paymentId: number) =
 
 export const PaymentService = {
   createPaymentSession,
+  createCheckoutSession,
+  verifyCheckoutSession,
   markPaymentCompleted,
   markPaymentFailed,
   manualConfirmPayment,

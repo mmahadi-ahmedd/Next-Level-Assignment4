@@ -18,6 +18,33 @@ const createPaymentSession = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const createCheckoutSession = catchAsync(async (req: Request, res: Response) => {
+  const result = await PaymentService.createCheckoutSession(
+    req.user!.id,
+    req.body.bookingId
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: 'Checkout session created',
+    data: result,
+  });
+});
+
+const verifyCheckoutSession = catchAsync(async (req: Request, res: Response) => {
+  const { sessionId, bookingId } = req.body;
+  const result = await PaymentService.verifyCheckoutSession(
+    sessionId,
+    Number(bookingId)
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Payment verified and booking marked as PAID',
+    data: result,
+  });
+});
+
 const confirmPayment = catchAsync(async (req: Request, res: Response) => {
   const result = await PaymentService.manualConfirmPayment(req.user!.id, req.body.bookingId);
   sendResponse(res, {
@@ -96,6 +123,8 @@ const getPaymentById = catchAsync(async (req: Request, res: Response) => {
 
 export const PaymentController = {
   createPaymentSession,
+  createCheckoutSession,
+  verifyCheckoutSession,
   confirmPayment,
   handleWebhook,
   testConfirmPayment,

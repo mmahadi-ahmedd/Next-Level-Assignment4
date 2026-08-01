@@ -14,6 +14,15 @@ router.post(
   validateRequest(PaymentValidation.createPaymentSchema),
   PaymentController.createPaymentSession
 );
+
+router.post(
+  '/checkout',
+  auth(),
+  checkRole('CUSTOMER'),
+  validateRequest(PaymentValidation.createPaymentSchema),
+  PaymentController.createCheckoutSession
+);
+
 router.post(
   '/confirm',
   auth(),
@@ -21,6 +30,12 @@ router.post(
   validateRequest(PaymentValidation.createPaymentSchema),
   PaymentController.confirmPayment
 );
+
+router.post(
+  '/verify-session',
+  PaymentController.verifyCheckoutSession
+);
+
 router.post(
   '/test-confirm',
   auth(),
